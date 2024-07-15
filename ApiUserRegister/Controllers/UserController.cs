@@ -4,10 +4,12 @@ using Application.Features.UserFeatures.Commands.CreateUser;
 using Application.Features.UserFeatures.Queries.GetUsers;
 using Application.Features.UserFeatures.Commands.DeleteUser;
 using Application.Features.UserFeatures.Commands.UpdateUser;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ApiUserRegister.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/user")]
     public class UserController: ControllerBase
@@ -19,6 +21,7 @@ namespace ApiUserRegister.Controllers
             this.mediator = mediator;
         }
 
+        [AllowAnonymous]
         [HttpPost(Name = "CreateUser")]
         public async Task<ActionResult<int>> CreateUser(CreateUserCommand user)
         {
@@ -32,7 +35,21 @@ namespace ApiUserRegister.Controllers
             var result = await mediator.Send(new GetUsersQuery());
             return result;
         }
-
+        
+        [Route("{id}")]
+        [HttpGet()]
+        public async Task<ActionResult<UserVM>> GetUserById(int id)
+        {
+            var result = await mediator.Send(new GetUsersQuery());
+            var user = result.FirstOrDefault(p=>p.Id == id);
+            if(user == null)
+            {
+                return NotFound();
+            }
+            return user;
+        }
+        
+        [Route("{id}")]
         [HttpDelete]
         public async Task<ActionResult> Delete(int id)
         {

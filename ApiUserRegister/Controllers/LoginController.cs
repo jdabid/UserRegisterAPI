@@ -2,6 +2,8 @@
 using System.Security.Claims;
 using System.Text;
 using ApiUserRegister.Models;
+using Application.Features.UserFeatures.Queries.GetUsers;
+using Application.Features.UserFeatures.Queries.IsValidUser;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -26,21 +28,17 @@ namespace Scheduling.API.Controllers
         {
             try
             {
-                //var query = new GetClaimsQuery(authenticationInfo.Email);
-                var claims = new List<Claim>(); //await mediator.Send(query);
-                //claims.Add(new Claim() { })
+                var query = new IsUserValidQuery(authenticationInfo.UserName, authenticationInfo.Password);
+                var result = await mediator.Send(query);
 
-                bool suceeded = true;
-                var validemails = new List<string>() { "doc", "pat" };
-
-                if (suceeded)
-                {
-                    return BuildToken(authenticationInfo, claims);
-                }
-                else
+                if (!result)
                 {
                     return BadRequest("Login");
                 }
+
+                var claims = new List<Claim>();
+                claims.Add(new Claim("username", authenticationInfo.UserName));
+                return BuildToken(authenticationInfo, claims);
             }
             catch (ApplicationException ex)
             {
@@ -61,9 +59,7 @@ namespace Scheduling.API.Controllers
         }
 
         private ResponseAuthentication BuildToken(AuthenticationInfo authenticationInfo, List<Claim> claims)
-        {
-            claims.Add(new Claim("email", authenticationInfo.Email));
-
+        {            
             var keyjwt = this.configuration["keyjwt"] ?? string.Empty;
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyjwt));

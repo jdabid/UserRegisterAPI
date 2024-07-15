@@ -25,7 +25,7 @@ namespace Application.Features.UserFeatures.Queries.GetUsers
                 var uVM= new UserVM();
                 uVM.Id = entity.Id;
                 uVM.Name = entity.Name;
-                uVM.UserName = entity.UserName;
+                uVM.Username = entity.UserName;
                 res.Add(uVM);
             }
 
